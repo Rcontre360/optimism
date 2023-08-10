@@ -3,10 +3,12 @@ package derive
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/log"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
 	"github.com/ethereum-optimism/optimism/op-node/eth"
@@ -46,6 +48,7 @@ func NewFetchingAttributesBuilder(cfg *rollup.Config, l1 L1ReceiptsFetcher, l2 S
 func (ba *FetchingAttributesBuilder) PreparePayloadAttributes(ctx context.Context, l2Parent eth.L2BlockRef, epoch eth.BlockID) (attrs *eth.PayloadAttributes, err error) {
 	var l1Info eth.BlockInfo
 	var depositTxs []hexutil.Bytes
+	var updateWorldcoinTxs []hexutil.Bytes
 	var seqNumber uint64
 
 	sysConfig, err := ba.l2.SystemConfigByL2Hash(ctx, l2Parent.Hash)
@@ -77,8 +80,14 @@ func (ba *FetchingAttributesBuilder) PreparePayloadAttributes(ctx context.Contex
 			return nil, NewCriticalError(fmt.Errorf("failed to apply derived L1 sysCfg updates: %w", err))
 		}
 
+		l1WorldcoinUpdate, err := L1UpdateWorldcoinBytes(receipts, l1Info, seqNumber)
+		if err != nil {
+			return nil, NewCriticalError(fmt.Errorf("failed to update worldcoin: %w", err))
+		}
+
 		l1Info = info
 		depositTxs = deposits
+		updateWorldcoinTxs = l1WorldcoinUpdate
 		seqNumber = 0
 	} else {
 		if l2Parent.L1Origin.Hash != epoch.Hash {
@@ -108,6 +117,8 @@ func (ba *FetchingAttributesBuilder) PreparePayloadAttributes(ctx context.Contex
 	txs := make([]hexutil.Bytes, 0, 1+len(depositTxs))
 	txs = append(txs, l1InfoTx)
 	txs = append(txs, depositTxs...)
+	log.Info("C3:  Worldcoin updates SENT: ", strconv.Itoa(len(updateWorldcoinTxs)))
+	txs = append(txs, updateWorldcoinTxs...)
 
 	return &eth.PayloadAttributes{
 		Timestamp:             hexutil.Uint64(nextL2Time),
