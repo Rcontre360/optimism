@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
-	"strings"
 
 	"github.com/ethereum-optimism/optimism/op-node/eth"
 	"github.com/ethereum/go-ethereum/common"
@@ -30,7 +29,7 @@ var (
 
 var (
 	L2UpdateFuncBytes4 = crypto.Keccak256([]byte(L2UpdateRootFunction))[:4]
-	L2RegistryContract = common.HexToAddress("0x045154988bF29b95b2197092EF7A20F3BFeDB94D")
+	L2RegistryContract = common.HexToAddress("0x59f7Dd1472c89cb721378073d3662919984D06b2")
 )
 
 type L1UpdateInfo struct {
@@ -56,7 +55,6 @@ func (info *L1UpdateInfo) CallData() ([]byte, error) {
 }
 
 func ReceiptToUpdates(receipts []*types.Receipt) ([]*L1UpdateInfo, error) {
-	log.Info("ATTENTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNJJ")
 	var out []*L1UpdateInfo
 	var result error
 	for _, rec := range receipts {
@@ -64,37 +62,14 @@ func ReceiptToUpdates(receipts []*types.Receipt) ([]*L1UpdateInfo, error) {
 			continue
 		}
 		for _, rawLog := range rec.Logs {
-			if strings.ToLower(rawLog.Address.String()) == strings.ToLower(L1WorldcoinRegistry.String()) {
-				log.Info("RAFAEL MATCHINGggggg LOG", rawLog.Topics[0].String(), RootSentEventABIHash.String())
-				log.Info("CONDITIONS", strconv.FormatBool(rawLog.Address == L1WorldcoinRegistry), strconv.FormatBool(len(rawLog.Topics) > 0), strconv.FormatBool(rawLog.Topics[0] == RootSentEventABIHash))
-			}
-
 			if rawLog.Address == L1WorldcoinRegistry && len(rawLog.Topics) > 0 && rawLog.Topics[0] == RootSentEventABIHash {
+				log.Info("ATENTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
 				ev := rawLog
-				log.Info("AAA")
-				if len(ev.Topics) != 2 {
-					return nil, fmt.Errorf("expected 4 event topics (event identity, indexed from, indexed to, indexed version), got %d", len(ev.Topics))
-				}
-				log.Info("BBB")
-				if ev.Topics[0] != RootSentEventABIHash {
-					return nil, fmt.Errorf("invalid deposit event selector: %s, expected %s", ev.Topics[0], RootSentEventABIHash)
-				}
-				log.Info("CCC")
-				if len(ev.Data) < 64 {
-					return nil, fmt.Errorf("incomplate opaqueData slice header (%d bytes): %x", len(ev.Data), ev.Data)
-				}
-				log.Info("DDD")
-				if len(ev.Data)%32 != 0 {
-					return nil, fmt.Errorf("expected log data to be multiple of 32 bytes: got %d bytes", len(ev.Data))
-				}
-
-				// indexed 0
 				infoDat := &L1UpdateInfo{
-					hash:      common.BytesToHash(ev.Topics[1][12:]),
-					timestamp: common.BytesToHash(ev.Topics[2][12:]),
+					hash:      common.BytesToHash(ev.Data[0:32]),
+					timestamp: common.BytesToHash(ev.Data[32:64]),
 				}
 				out = append(out, infoDat)
-
 			}
 		}
 	}
@@ -103,14 +78,17 @@ func ReceiptToUpdates(receipts []*types.Receipt) ([]*L1UpdateInfo, error) {
 
 // Additionally, the event log-index and
 func WorldcoinTxGivenEvent(deposits []*L1UpdateInfo, block eth.BlockInfo, seqNumber uint64) ([]*types.DepositTx, error) {
+	log.Info("WorldcoinTxGivenEvent")
 	var depositTxs []*types.DepositTx
 
 	for _, info := range deposits {
+		log.Info("info.Calldata")
 		data, err := info.CallData()
 		if err != nil {
 			return nil, err
 		}
 
+		log.Info("SOURCE")
 		source := L1InfoDepositSource{
 			L1BlockHash: block.Hash(),
 			SeqNumber:   seqNumber,
@@ -136,7 +114,6 @@ func WorldcoinTxGivenEvent(deposits []*L1UpdateInfo, block eth.BlockInfo, seqNum
 
 func L1UpdateWorldcoinBytes(receipts []*types.Receipt, l1Info eth.BlockInfo, seqNumber uint64) ([]hexutil.Bytes, error) {
 	var result error
-	log.Info("RAFAEL receipts", strconv.Itoa(len(receipts)))
 	updates, err := ReceiptToUpdates(receipts)
 	log.Info("RAFAEL updates", strconv.Itoa(len(updates)))
 

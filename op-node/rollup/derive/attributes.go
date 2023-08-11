@@ -80,7 +80,7 @@ func (ba *FetchingAttributesBuilder) PreparePayloadAttributes(ctx context.Contex
 			return nil, NewCriticalError(fmt.Errorf("failed to apply derived L1 sysCfg updates: %w", err))
 		}
 
-		l1WorldcoinUpdate, err := L1UpdateWorldcoinBytes(receipts, l1Info, seqNumber)
+		l1WorldcoinUpdate, err := L1UpdateWorldcoinBytes(receipts, info, seqNumber)
 		if err != nil {
 			return nil, NewCriticalError(fmt.Errorf("failed to update worldcoin: %w", err))
 		}
