@@ -22,8 +22,7 @@ type ExponentialStrategy struct {
 	// Max is the maximum amount of time to wait between attempts.
 	Max time.Duration
 
-	// MaxJitter is the maximum amount of random jitter to insert between
-	// attempts in ms.
+	// MaxJitter is the maximum amount of random jitter to insert between attempts.
 	MaxJitter time.Duration
 }
 
