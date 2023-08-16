@@ -43,8 +43,8 @@ func (e *ExponentialStrategy) Duration(attempt int) time.Duration {
 
 func Exponential() Strategy {
 	return &ExponentialStrategy{
-		Max:       time.Duration(10000),
-		MaxJitter: time.Duration(250),
+		Max:       time.Duration(10000 * time.Millisecond),
+		MaxJitter: time.Duration(250 * time.Millisecond),
 	}
 }
 
