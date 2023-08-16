@@ -14,8 +14,8 @@ func TestExponential(t *testing.T) {
 		MaxJitter: 0,
 	}
 
-	durations := []int{4, 5, 7, 10, 10}
+	durations := []time.Duration{4, 5, 7, 10, 10}
 	for i, dur := range durations {
-		require.Equal(t, time.Millisecond*time.Duration(dur*1000), strategy.Duration(i))
+		require.Equal(t, time.Millisecond*dur*1000, strategy.Duration(i))
 	}
 }
