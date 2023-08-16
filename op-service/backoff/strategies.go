@@ -29,15 +29,15 @@ type ExponentialStrategy struct {
 func (e *ExponentialStrategy) Duration(attempt int) time.Duration {
 	var jitter time.Duration
 	if e.MaxJitter > 0 {
-		jitter = time.Duration(rand.Int63n(e.MaxJitter.Milliseconds()))
+		jitter = time.Duration(rand.Int63n(e.MaxJitter.Nanoseconds()))
 	}
-	dur := e.Min + time.Duration((math.Pow(2, float64(attempt)) * 1000))
+	dur := e.Min + time.Duration(int(math.Pow(2, float64(attempt))*1000))*time.Millisecond
 	dur += jitter
 	if dur > e.Max {
-		return time.Millisecond * time.Duration(e.Max)
+		return e.Max
 	}
 
-	return time.Millisecond * time.Duration(dur)
+	return time.Duration(dur)
 }
 
 func Exponential() Strategy {

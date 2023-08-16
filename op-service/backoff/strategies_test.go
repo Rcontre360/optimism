@@ -9,13 +9,14 @@ import (
 
 func TestExponential(t *testing.T) {
 	strategy := &ExponentialStrategy{
-		Min:       3000,
-		Max:       10000,
+		Min:       3000 * time.Millisecond,
+		Max:       10000 * time.Millisecond,
 		MaxJitter: 0,
 	}
 
 	durations := []time.Duration{4, 5, 7, 10, 10}
 	for i, dur := range durations {
-		require.Equal(t, time.Millisecond*dur*1000, strategy.Duration(i))
+		msDuration := dur * time.Millisecond * 1000
+		require.Equal(t, msDuration, strategy.Duration(i))
 	}
 }
