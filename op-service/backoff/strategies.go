@@ -37,7 +37,7 @@ func (e *ExponentialStrategy) Duration(attempt int) time.Duration {
 		return e.Max
 	}
 
-	return time.Duration(dur)
+	return dur
 }
 
 func Exponential() Strategy {
