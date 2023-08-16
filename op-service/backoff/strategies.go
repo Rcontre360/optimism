@@ -16,7 +16,7 @@ type Strategy interface {
 // ExponentialStrategy performs exponential backoff. The exponential backoff
 // function is min(e.Min + (2^attempt * 1000) + randBetween(0, e.MaxJitter), e.Max)
 type ExponentialStrategy struct {
-	// Min is the minimum amount of time to wait between attempts in ms.
+	// Min is the minimum amount of time to wait between attempts.
 	Min time.Duration
 
 	// Max is the maximum amount of time to wait between attempts in ms.
