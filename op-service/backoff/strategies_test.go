@@ -16,7 +16,6 @@ func TestExponential(t *testing.T) {
 
 	durations := []time.Duration{4, 5, 7, 10, 10}
 	for i, dur := range durations {
-		msDuration := dur * time.Millisecond * 1000
-		require.Equal(t, msDuration, strategy.Duration(i))
+		require.Equal(t, dur*time.Second, strategy.Duration(i))
 	}
 }
